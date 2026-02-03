@@ -13,6 +13,7 @@ import { DemoModal } from './components/DemoModal';
 import { DashboardLayout } from './components/DashboardLayout';
 import { StudentDashboard } from './components/dashboards/StudentDashboard';
 import { CoachDashboard } from './components/dashboards/CoachDashboard';
+import { ScoreCalculator } from './components/tools/ScoreCalculator';
 
 const AppContent = () => {
   const { user } = useAuth();
@@ -26,10 +27,17 @@ const AppContent = () => {
   if (user) {
     return (
       <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
-        {user.role === 'student' && <StudentDashboard />}
-        {user.role === 'admin' && <CoachDashboard activeTab={activeTab} />}
-        {user.role === 'teacher' && <div className="text-center p-10 text-gray-500">Öğretmen paneli yapım aşamasında (Admin paneline bakınız)</div>}
-        {user.role === 'parent' && <div className="text-center p-10 text-gray-500">Veli paneli yapım aşamasında (Öğrenci paneline bakınız)</div>}
+        {activeTab === 'calculator' ? (
+          <ScoreCalculator />
+        ) : (
+          <>
+            {user.role === 'student' && <StudentDashboard />}
+            {user.role === 'admin' && <CoachDashboard activeTab={activeTab} />}
+            {/* If tab is not calculator and user is parent/teacher, show placeholder for now, but they can still access Calculator */}
+            {user.role === 'teacher' && <div className="text-center p-10 text-gray-500">Öğretmen paneli yapım aşamasında (Admin paneline bakınız veya Hesaplama Robotunu kullanın)</div>}
+            {user.role === 'parent' && <div className="text-center p-10 text-gray-500">Veli paneli yapım aşamasında (Öğrenci paneline bakınız veya Hesaplama Robotunu kullanın)</div>}
+          </>
+        )}
       </DashboardLayout>
     );
   }

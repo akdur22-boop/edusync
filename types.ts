@@ -260,3 +260,61 @@ export interface MockExam {
   questions: Question[];
   status: 'draft' | 'published';
 }
+
+// --- HOMEWORK / ASSIGNMENT TYPES ---
+export interface Book {
+  id: string;
+  title: string;
+  publisher: string;
+  subject: string;
+  image?: string;
+}
+
+export interface Assignment {
+  id: string;
+  studentId: string;
+  studentName: string;
+  bookId: string;
+  bookName: string;
+  testRange: string; // e.g., "Sayfa 10-12" or "Test 5"
+  questionCount: number;
+  dueDate: string;
+  status: 'pending' | 'completed';
+  answers?: string[]; // Student's answers: 'A', 'B', 'C', 'EMPTY', etc.
+  score?: number;
+  assignedDate: string;
+}
+
+// --- STUDY PROGRAM TYPES ---
+export interface ProgramItem {
+  id: string;
+  date: string; // ISO Date "2024-02-20"
+  subject: string;
+  topic: string;
+  bookId?: string;
+  bookName?: string;
+  questionTarget?: number;
+  isCompleted: boolean;
+  type: 'study' | 'test' | 'rest';
+}
+
+export interface StudyProgram {
+  id: string;
+  studentId: string;
+  items: ProgramItem[];
+}
+
+// --- VIDEO LIBRARY TYPES ---
+export interface VideoResource {
+  id: string;
+  channelName: string;
+  title: string; // Playlist or Video Title
+  examType: 'YKS' | 'LGS' | 'TYT' | 'AYT';
+  subject: string;
+  level: 'Temel' | 'Orta' | 'İleri';
+  style: 'Konu Anlatımı' | 'Soru Çözümü' | 'Kamp';
+  url: string; // Youtube Link
+  avatarColor: string;
+  tags: string[];
+  likes: number;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './Button';
-import { LogOut, LayoutDashboard, Settings, User, GraduationCap, Wallet, Maximize, Minimize, FileQuestion } from 'lucide-react';
+import { LogOut, LayoutDashboard, Settings, User, GraduationCap, Wallet, Maximize, Minimize, FileQuestion, BookOpenCheck, Calculator, CalendarDays } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -77,6 +77,30 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, acti
                 <GraduationCap className="w-5 h-5" />
                 Öğrenciler
               </button>
+              
+              <button 
+                onClick={() => handleNavClick('program')}
+                className={`px-4 py-3 rounded-lg font-medium flex items-center gap-3 transition-colors ${
+                  activeTab === 'program' 
+                    ? 'bg-primary-50 text-primary-700' 
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <CalendarDays className="w-5 h-5" />
+                Çalışma Programı
+              </button>
+
+              <button 
+                onClick={() => handleNavClick('assignments')}
+                className={`px-4 py-3 rounded-lg font-medium flex items-center gap-3 transition-colors ${
+                  activeTab === 'assignments' 
+                    ? 'bg-primary-50 text-primary-700' 
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <BookOpenCheck className="w-5 h-5" />
+                Ödev Yönetimi
+              </button>
 
               <button 
                 onClick={() => handleNavClick('mock-exams')}
@@ -103,6 +127,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, acti
               </button>
             </>
           )}
+
+          {/* SHARED TOOL FOR EVERYONE */}
+          <button 
+            onClick={() => handleNavClick('calculator')}
+            className={`px-4 py-3 rounded-lg font-medium flex items-center gap-3 transition-colors ${
+              activeTab === 'calculator' 
+                ? 'bg-indigo-50 text-indigo-700' 
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <Calculator className="w-5 h-5" />
+            Hesaplama Robotu
+          </button>
 
           <button 
             onClick={() => handleNavClick('profile')}
