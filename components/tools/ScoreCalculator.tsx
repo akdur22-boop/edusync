@@ -3,6 +3,77 @@ import { Calculator, RotateCcw, TrendingUp, Award, BookOpen, ChevronDown, Check,
 import { calculateLGS, calculateYKS, ExamResult, ScoreInput } from '../../services/scoreService';
 import { Button } from '../Button';
 
+// Reusable Input Row Component for Better Mobile Layout
+// Moved outside to fix TypeScript errors and prevent re-creation on render
+interface SubjectRowProps {
+  sub: { id: string; label: string; q: number };
+  type: 'LGS' | 'TYT' | 'AYT';
+  inputs: Record<string, ScoreInput>;
+  onInputChange: (subject: string, field: 'correct' | 'incorrect', value: string) => void;
+}
+
+const SubjectRow: React.FC<SubjectRowProps> = ({ sub, type, inputs, onInputChange }) => {
+  const correct = inputs[sub.id]?.correct || '';
+  const incorrect = inputs[sub.id]?.incorrect || '';
+  const net = Math.max(0, (Number(correct) || 0) - ((Number(incorrect) || 0) * (type === 'LGS' ? 0.33 : 0.25))).toFixed(2);
+
+  return (
+    <div className="p-3 sm:p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow grid grid-cols-12 gap-3 items-center group">
+      {/* Label Section */}
+      <div className="col-span-12 sm:col-span-4 flex items-center justify-between sm:justify-start gap-2 mb-1 sm:mb-0 border-b sm:border-b-0 border-gray-100 pb-2 sm:pb-0">
+        <div className="font-bold text-gray-800 text-sm sm:text-base flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${Number(correct) > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+          {sub.label}
+        </div>
+        <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md sm:hidden">
+          Max: {sub.q}
+        </span>
+      </div>
+
+      {/* Inputs Section */}
+      <div className="col-span-6 sm:col-span-3 relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+          <Check className="w-3.5 h-3.5 text-green-600" />
+        </div>
+        <input 
+          type="number" 
+          pattern="[0-9]*"
+          inputMode="numeric"
+          placeholder="Doğru" 
+          max={sub.q}
+          className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm sm:text-base font-medium outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all placeholder:text-gray-400 text-gray-900"
+          onChange={(e) => onInputChange(sub.id, 'correct', e.target.value)}
+          value={correct}
+        />
+      </div>
+
+      <div className="col-span-6 sm:col-span-3 relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+          <XIcon className="w-3.5 h-3.5 text-red-500" />
+        </div>
+        <input 
+          type="number" 
+          pattern="[0-9]*"
+          inputMode="numeric"
+          placeholder="Yanlış" 
+          max={sub.q}
+          className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm sm:text-base font-medium outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all placeholder:text-gray-400 text-gray-900"
+          onChange={(e) => onInputChange(sub.id, 'incorrect', e.target.value)}
+          value={incorrect}
+        />
+      </div>
+
+      {/* Net Section */}
+      <div className="col-span-12 sm:col-span-2 flex items-center justify-end sm:justify-end sm:flex-col sm:items-end gap-1 mt-1 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-50">
+        <span className="text-xs text-gray-400 font-medium sm:hidden mr-auto">NET DEĞERİ</span>
+        <div className={`font-black text-lg sm:text-xl ${Number(net) > 0 ? 'text-indigo-600' : 'text-gray-300'}`}>
+          {net}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const ScoreCalculator: React.FC = () => {
   const [examType, setExamType] = useState<'LGS' | 'YKS'>('YKS');
   const [yksType, setYksType] = useState<'SAY' | 'EA' | 'SOZ'>('SAY');
@@ -92,69 +163,6 @@ export const ScoreCalculator: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Reusable Input Row Component for Better Mobile Layout
-  const SubjectRow = ({ sub, type }: { sub: { id: string, label: string, q: number }, type: 'LGS' | 'TYT' | 'AYT' }) => {
-    const correct = inputs[sub.id]?.correct || '';
-    const incorrect = inputs[sub.id]?.incorrect || '';
-    const net = Math.max(0, (Number(correct) || 0) - ((Number(incorrect) || 0) * (type === 'LGS' ? 0.33 : 0.25))).toFixed(2);
-
-    return (
-      <div className="p-3 sm:p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow grid grid-cols-12 gap-3 items-center group">
-        {/* Label Section */}
-        <div className="col-span-12 sm:col-span-4 flex items-center justify-between sm:justify-start gap-2 mb-1 sm:mb-0 border-b sm:border-b-0 border-gray-100 pb-2 sm:pb-0">
-          <div className="font-bold text-gray-800 text-sm sm:text-base flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${Number(correct) > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-            {sub.label}
-          </div>
-          <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md sm:hidden">
-            Max: {sub.q}
-          </span>
-        </div>
-
-        {/* Inputs Section */}
-        <div className="col-span-6 sm:col-span-3 relative">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-            <Check className="w-3.5 h-3.5 text-green-600" />
-          </div>
-          <input 
-            type="number" 
-            pattern="[0-9]*"
-            inputMode="numeric"
-            placeholder="Doğru" 
-            max={sub.q}
-            className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm sm:text-base font-medium outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all placeholder:text-gray-400 text-gray-900"
-            onChange={(e) => handleInputChange(sub.id, 'correct', e.target.value)}
-            value={correct}
-          />
-        </div>
-
-        <div className="col-span-6 sm:col-span-3 relative">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-            <XIcon className="w-3.5 h-3.5 text-red-500" />
-          </div>
-          <input 
-            type="number" 
-            pattern="[0-9]*"
-            inputMode="numeric"
-            placeholder="Yanlış" 
-            max={sub.q}
-            className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm sm:text-base font-medium outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all placeholder:text-gray-400 text-gray-900"
-            onChange={(e) => handleInputChange(sub.id, 'incorrect', e.target.value)}
-            value={incorrect}
-          />
-        </div>
-
-        {/* Net Section */}
-        <div className="col-span-12 sm:col-span-2 flex items-center justify-end sm:justify-end sm:flex-col sm:items-end gap-1 mt-1 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-50">
-          <span className="text-xs text-gray-400 font-medium sm:hidden mr-auto">NET DEĞERİ</span>
-          <div className={`font-black text-lg sm:text-xl ${Number(net) > 0 ? 'text-indigo-600' : 'text-gray-300'}`}>
-            {net}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-6 md:space-y-10 animate-in fade-in duration-500 pb-20 md:pb-12">
       {/* Header */}
@@ -223,7 +231,7 @@ export const ScoreCalculator: React.FC = () => {
                       <h3 className="font-bold text-gray-900">Temel Yeterlilik (TYT)</h3>
                     </div>
                     <div className="space-y-3">
-                      {tytSubjects.map(sub => <SubjectRow key={sub.id} sub={sub} type="TYT" />)}
+                      {tytSubjects.map(sub => <SubjectRow key={sub.id} sub={sub} type="TYT" inputs={inputs} onInputChange={handleInputChange} />)}
                     </div>
                   </div>
 
@@ -236,7 +244,7 @@ export const ScoreCalculator: React.FC = () => {
                       <h3 className="font-bold text-gray-900">Alan Yeterlilik (AYT)</h3>
                     </div>
                     <div className="space-y-3">
-                      {aytSubjects[yksType].map(sub => <SubjectRow key={sub.id} sub={sub} type="AYT" />)}
+                      {aytSubjects[yksType].map(sub => <SubjectRow key={sub.id} sub={sub} type="AYT" inputs={inputs} onInputChange={handleInputChange} />)}
                     </div>
                   </div>
                 </>
@@ -250,7 +258,7 @@ export const ScoreCalculator: React.FC = () => {
                     <h3 className="font-bold text-gray-900">LGS Dersleri</h3>
                   </div>
                   <div className="space-y-3">
-                    {lgsSubjects.map(sub => <SubjectRow key={sub.id} sub={sub} type="LGS" />)}
+                    {lgsSubjects.map(sub => <SubjectRow key={sub.id} sub={sub} type="LGS" inputs={inputs} onInputChange={handleInputChange} />)}
                   </div>
                 </div>
               )}

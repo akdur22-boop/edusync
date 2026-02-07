@@ -305,7 +305,7 @@ export const StudentDashboard: React.FC = () => {
          <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
             {displayDays.map((day, i) => {
                const dateStr = day.toISOString().split('T')[0];
-               const items = groupedProgram[dateStr] || [];
+               const items = groupedProgram[dateStr] ? groupedProgram[dateStr].sort((a,b) => (a.time || '23:59').localeCompare(b.time || '23:59')) : [];
                const isToday = dateStr === new Date().toISOString().split('T')[0];
 
                return (
@@ -337,6 +337,11 @@ export const StudentDashboard: React.FC = () => {
                                  >
                                     {item.isCompleted && <CheckCircle2 className="w-4 h-4" />}
                                  </button>
+                                 {item.time && (
+                                    <div className="mr-4 text-center min-w-[50px]">
+                                       <span className="text-sm font-bold text-gray-900 block">{item.time}</span>
+                                    </div>
+                                 )}
                                  <div className="flex-1">
                                     <div className={`font-bold text-gray-900 ${item.isCompleted ? 'line-through text-gray-500' : ''}`}>{item.subject} <span className="font-normal text-gray-500 mx-1">•</span> {item.topic}</div>
                                     <div className="flex items-center gap-2 mt-1">

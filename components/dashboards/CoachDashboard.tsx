@@ -132,7 +132,7 @@ const AddStudentModal = ({ onClose, onAdd }: { onClose: () => void, onAdd: (s: a
                             <div className="relative">
                                <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none appearance-none cursor-pointer text-gray-900" onChange={e => setFormData({...formData, classGrade: e.target.value})}>
                                   <option>12. Sınıf</option><option>11. Sınıf</option><option>10. Sınıf</option><option>Mezun</option>
-                               </select>
+                                </select>
                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                             </div>
                          </div>
@@ -165,7 +165,8 @@ const ProgramView = () => {
       topic: '',
       bookId: '',
       type: 'study' as 'study' | 'test' | 'rest',
-      questionTarget: 0
+      questionTarget: 0,
+      time: ''
    });
 
    useEffect(() => {
@@ -215,12 +216,13 @@ const ProgramView = () => {
          bookId: book?.id,
          bookName: book?.title,
          type: newItem.type,
-         questionTarget: newItem.questionTarget || undefined
+         questionTarget: newItem.questionTarget || undefined,
+         time: newItem.time || undefined
       });
 
       setProgramItems([...programItems, addedItem]);
       setIsAddModalOpen(false);
-      setNewItem({ subject: 'Matematik', topic: '', bookId: '', type: 'study', questionTarget: 0 });
+      setNewItem({ subject: 'Matematik', topic: '', bookId: '', type: 'study', questionTarget: 0, time: '' });
    };
 
    const handleDeleteItem = (itemId: string) => {
@@ -281,7 +283,10 @@ const ProgramView = () => {
             <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
                {weekDays.map((day, i) => {
                   const dateStr = day.toISOString().split('T')[0];
-                  const dayItems = programItems.filter(item => item.date === dateStr);
+                  // Sort items by time (if exists) or fallback to end
+                  const dayItems = programItems
+                     .filter(item => item.date === dateStr)
+                     .sort((a, b) => (a.time || '23:59').localeCompare(b.time || '23:59'));
 
                   return (
                      <div key={i} className="flex flex-col gap-3">
@@ -300,6 +305,13 @@ const ProgramView = () => {
                                  <button onClick={() => handleDeleteItem(item.id)} className="absolute top-1 right-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <X className="w-3 h-3" />
                                  </button>
+                                 <div className="flex items-center gap-1 mb-1">
+                                    {item.time && (
+                                       <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                          <Clock className="w-3 h-3" /> {item.time}
+                                       </span>
+                                    )}
+                                 </div>
                                  <div className="font-bold text-gray-900">{item.subject}</div>
                                  <div className="text-xs text-gray-600 mb-1">{item.topic}</div>
                                  {item.bookName && (
@@ -338,49 +350,120 @@ const ProgramView = () => {
 
          {/* Add Item Modal */}
          {isAddModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-               <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95">
-                  <div className="flex justify-between items-center mb-6">
-                     <h3 className="font-bold text-gray-900">Program Ekle</h3>
-                     <button onClick={() => setIsAddModalOpen(false)}><X className="w-5 h-5 text-gray-500" /></button>
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+               <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 animate-in zoom-in-95 duration-200 relative overflow-hidden">
+                  
+                  {/* Background Decoration */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+
+                  <div className="flex justify-between items-center mb-8 relative z-10">
+                     <div>
+                        <h3 className="text-2xl font-black text-gray-900 tracking-tight">Program Ekle</h3>
+                        <p className="text-sm text-gray-500 font-medium mt-1">
+                           {selectedDayDate 
+                              ? new Date(selectedDayDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' }) 
+                              : 'Yeni Görev Planla'}
+                        </p>
+                     </div>
+                     <button 
+                        onClick={() => setIsAddModalOpen(false)}
+                        className="w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
+                     >
+                        <X className="w-5 h-5" />
+                     </button>
                   </div>
                   
-                  <form onSubmit={handleAddItem} className="space-y-4">
-                     <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Ders</label>
-                        <select className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl" value={newItem.subject} onChange={e => setNewItem({...newItem, subject: e.target.value})}>
-                           {['Matematik', 'Fizik', 'Kimya', 'Biyoloji', 'Türkçe', 'Tarih', 'Coğrafya', 'Felsefe', 'Din', 'İngilizce'].map(l => <option key={l} value={l}>{l}</option>)}
-                        </select>
+                  <form onSubmit={handleAddItem} className="space-y-5 relative z-10">
+                     <div className="grid grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                           <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Ders</label>
+                           <div className="relative">
+                              <select 
+                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-gray-900 font-bold transition-all appearance-none cursor-pointer" 
+                                 value={newItem.subject} 
+                                 onChange={e => setNewItem({...newItem, subject: e.target.value})}
+                              >
+                                 {['Matematik', 'Fizik', 'Kimya', 'Biyoloji', 'Türkçe', 'Tarih', 'Coğrafya', 'Felsefe', 'Din', 'İngilizce'].map(l => <option key={l} value={l}>{l}</option>)}
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                           </div>
+                        </div>
+                        <div className="space-y-1.5">
+                           <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Saat</label>
+                           <div className="relative">
+                              <input 
+                                 type="time" 
+                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-gray-900 font-bold transition-all" 
+                                 value={newItem.time} 
+                                 onChange={e => setNewItem({...newItem, time: e.target.value})} 
+                              />
+                              <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                           </div>
+                        </div>
                      </div>
-                     <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Konu</label>
-                        <input type="text" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl" placeholder="Örn: Türev, Gazlar..." value={newItem.topic} onChange={e => setNewItem({...newItem, topic: e.target.value})} required />
+                     
+                     <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Konu</label>
+                        <input 
+                           type="text" 
+                           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-gray-900 font-bold placeholder:text-gray-400 transition-all" 
+                           placeholder="Örn: Türev, Gazlar..." 
+                           value={newItem.topic} 
+                           onChange={e => setNewItem({...newItem, topic: e.target.value})} 
+                           required 
+                        />
                      </div>
-                     <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Kaynak Kitap (Opsiyonel)</label>
-                        <select className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl" value={newItem.bookId} onChange={e => setNewItem({...newItem, bookId: e.target.value})}>
-                           <option value="">Kitap Seçilmedi</option>
-                           {books.filter(b => b.subject === newItem.subject).map(b => (
-                              <option key={b.id} value={b.id}>{b.title} ({b.publisher})</option>
-                           ))}
-                        </select>
-                     </div>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                           <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Tür</label>
-                           <select className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl" value={newItem.type} onChange={e => setNewItem({...newItem, type: e.target.value as any})}>
-                              <option value="study">Konu Çalışma</option>
-                              <option value="test">Soru Çözümü</option>
+                     
+                     <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Kaynak Kitap (Opsiyonel)</label>
+                        <div className="relative">
+                           <select 
+                              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-gray-900 font-medium transition-all appearance-none cursor-pointer" 
+                              value={newItem.bookId} 
+                              onChange={e => setNewItem({...newItem, bookId: e.target.value})}
+                           >
+                              <option value="">Kitap Seçilmedi</option>
+                              {books.filter(b => b.subject === newItem.subject).map(b => (
+                                 <option key={b.id} value={b.id}>{b.title} ({b.publisher})</option>
+                              ))}
                            </select>
+                           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
+                     </div>
+                     
+                     <div className="grid grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                           <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Tür</label>
+                           <div className="relative">
+                              <select 
+                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-gray-900 font-medium transition-all appearance-none cursor-pointer" 
+                                 value={newItem.type} 
+                                 onChange={e => setNewItem({...newItem, type: e.target.value as any})}
+                              >
+                                 <option value="study">Konu Çalışma</option>
+                                 <option value="test">Soru Çözümü</option>
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                           </div>
                         </div>
                         {newItem.type === 'test' && (
-                           <div>
-                              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Soru Hedefi</label>
-                              <input type="number" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl" value={newItem.questionTarget} onChange={e => setNewItem({...newItem, questionTarget: Number(e.target.value)})} />
+                           <div className="space-y-1.5 animate-in fade-in slide-in-from-left-2">
+                              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Soru Hedefi</label>
+                              <input 
+                                 type="number" 
+                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-gray-900 font-bold placeholder:text-gray-400 transition-all" 
+                                 value={newItem.questionTarget} 
+                                 onChange={e => setNewItem({...newItem, questionTarget: Number(e.target.value)})} 
+                              />
                            </div>
                         )}
                      </div>
-                     <Button type="submit" className="w-full">Ekle</Button>
+                     
+                     <div className="pt-4">
+                        <Button type="submit" size="lg" className="w-full shadow-xl shadow-primary-600/20 py-4 text-lg">
+                           Programı Kaydet
+                        </Button>
+                     </div>
                   </form>
                </div>
             </div>

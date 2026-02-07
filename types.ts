@@ -289,6 +289,7 @@ export interface Assignment {
 export interface ProgramItem {
   id: string;
   date: string; // ISO Date "2024-02-20"
+  time?: string; // Time string "09:00"
   subject: string;
   topic: string;
   bookId?: string;

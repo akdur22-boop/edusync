@@ -216,9 +216,9 @@ let studyPrograms: StudyProgram[] = [
     id: 'sp1',
     studentId: '4',
     items: [
-      { id: 'spi1', date: new Date().toISOString().split('T')[0], subject: 'Matematik', topic: 'Logaritma', bookId: 'b6', bookName: 'AYT Matematik Fasikülleri', type: 'study', isCompleted: false, questionTarget: 20 },
-      { id: 'spi2', date: new Date().toISOString().split('T')[0], subject: 'Fizik', topic: 'İtme ve Momentum', bookId: 'b2', bookName: 'AYT Fizik Soru Bankası', type: 'test', isCompleted: true, questionTarget: 30 },
-      { id: 'spi3', date: daysFromNow(1), subject: 'Kimya', topic: 'Gazlar', bookId: 'b4', bookName: 'AYT Kimya Soru Bankası', type: 'study', isCompleted: false },
+      { id: 'spi1', date: new Date().toISOString().split('T')[0], time: '09:00', subject: 'Matematik', topic: 'Logaritma', bookId: 'b6', bookName: 'AYT Matematik Fasikülleri', type: 'study', isCompleted: false, questionTarget: 20 },
+      { id: 'spi2', date: new Date().toISOString().split('T')[0], time: '14:30', subject: 'Fizik', topic: 'İtme ve Momentum', bookId: 'b2', bookName: 'AYT Fizik Soru Bankası', type: 'test', isCompleted: true, questionTarget: 30 },
+      { id: 'spi3', date: daysFromNow(1), time: '10:00', subject: 'Kimya', topic: 'Gazlar', bookId: 'b4', bookName: 'AYT Kimya Soru Bankası', type: 'study', isCompleted: false },
     ]
   }
 ];
